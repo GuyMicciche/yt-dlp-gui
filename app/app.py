@@ -243,48 +243,51 @@ class MainWindow(qtw.QMainWindow, Ui_MainWindow):
     def save_preset(self):
         preset_name = self.le_preset_name.text().strip()
         
-        # If no preset name is provided
+        # Determine if we are working with a new preset or existing one
         if not preset_name:
-            selected_preset = self.dd_presets.currentText()
-            
-            # Ensure we're not overwriting "Custom"
-            if selected_preset != "Custom":
-                ret = qtw.QMessageBox.question(
-                    self,
-                    "Overwrite Preset",
-                    f"No preset name provided. Do you want to overwrite the existing preset '{selected_preset}'?",
-                    qtw.QMessageBox.Yes | qtw.QMessageBox.No,
-                    qtw.QMessageBox.No,
-                )
-                
-                if ret == qtw.QMessageBox.Yes:
-                    preset_name = selected_preset  # Use the currently selected preset name
-                else:
-                    return  # Exit the function if the user doesn't want to overwrite
-            else:
+            preset_name = self.dd_presets.currentText()
+            if preset_name == "Custom":
                 qtw.QMessageBox.warning(self, "Warning", "Preset name cannot be empty.")
                 return
+            # Ask if the user wants to overwrite the selected preset
+            if not self.confirm_overwrite(preset_name):
+                return
+
+        # Check if the preset already exists
+        is_new_preset = preset_name not in self.presets
         
-        # If a new preset name is provided and already exists, warn the user
-        if preset_name in self.presets and preset_name != self.dd_presets.currentText():
-            qtw.QMessageBox.warning(self, "Warning", f"A preset with the name '{preset_name}' already exists. Please choose a different name.")
-            return
+        # If the preset exists and is different from the selected one, ask to overwrite
+        if not is_new_preset and preset_name != self.dd_presets.currentText():
+            if not self.confirm_overwrite(preset_name):
+                return
 
         cargs = self.le_cargs.text().strip()
         if not cargs:
             qtw.QMessageBox.warning(self, "Warning", "Custom arguments cannot be empty.")
             return
         
-        # Save the preset
-        if preset_name not in self.presets:
-            self.dd_presets.addItem(preset_name)  # Add to dropdown only if it's a new preset
-        
+        # Save or update the preset
         self.presets[preset_name] = cargs
-        self.set_preset(preset_name)
 
+        # Add to dropdown if it's a new preset
+        if is_new_preset:
+            self.dd_presets.addItem(preset_name)
+
+        # Set the saved preset as the current selection in the dropdown
+        self.set_preset(preset_name)
+        
         qtw.QMessageBox.information(self, "Success", f"Preset '{preset_name}' saved successfully.")
-        #self.le_preset_name.clear()        
         self.save_config()
+
+    def confirm_overwrite(self, preset_name):
+        ret = qtw.QMessageBox.question(
+            self,
+            "Overwrite Preset",
+            f"A preset with the name '{preset_name}' already exists. Do you want to overwrite it?",
+            qtw.QMessageBox.Yes | qtw.QMessageBox.No,
+            qtw.QMessageBox.No,
+        )
+        return ret == qtw.QMessageBox.Yes
 
     def delete_preset(self):
         selected_preset = self.dd_presets.currentText()
