@@ -276,13 +276,14 @@ class MainWindow(qtw.QMainWindow, Ui_MainWindow):
             return
         
         # Save the preset
-        self.presets[preset_name] = cargs
         if preset_name not in self.presets:
             self.dd_presets.addItem(preset_name)  # Add to dropdown only if it's a new preset
-        #self.le_preset_name.clear()
-        qtw.QMessageBox.information(self, "Success", f"Preset '{preset_name}' saved successfully.")
         
+        self.presets[preset_name] = cargs
         self.set_preset(preset_name)
+
+        qtw.QMessageBox.information(self, "Success", f"Preset '{preset_name}' saved successfully.")
+        #self.le_preset_name.clear()        
         self.save_config()
 
     def delete_preset(self):
