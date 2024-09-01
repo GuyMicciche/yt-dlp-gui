@@ -15,7 +15,6 @@ os.environ["PATH"] += os.pathsep + str(ROOT / "bin")
 init_logger(ROOT / "debug.log")
 log = logging.getLogger(__name__)
 
-
 class MainWindow(qtw.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
@@ -233,6 +232,7 @@ class MainWindow(qtw.QMainWindow, Ui_MainWindow):
 
         self.to_dl = {}
 
+#region Presets
     def set_preset(self, preset_name):
         index = self.dd_presets.findText(preset_name)
         if index != -1:
@@ -316,6 +316,7 @@ class MainWindow(qtw.QMainWindow, Ui_MainWindow):
         else:
             self.le_cargs.setText(self.presets.get(selected_preset, ""))
             self.pb_delete_preset.setEnabled(True)
+#endregion
 
     def save_config(self):
         if self.dd_presets.currentIndex() == 0:  # If "Custom" preset is selected
