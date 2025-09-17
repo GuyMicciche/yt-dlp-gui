@@ -5,6 +5,13 @@ on:
     paths:
       - 'app/version.py'
 
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "version"
+        required: false
+
 permissions:
   contents: write
 
@@ -37,7 +44,7 @@ jobs:
           else
             version=$(git rev-parse --short HEAD)
           fi
-          sed -i "s/^__version__.*/__version__ = \"$version\"/" ./app.py
+          sed -i "s/^__version__.*/__version__ = \"$version\"/" ./version.py
 
       - name: Build application
         working-directory: ./app
@@ -46,18 +53,14 @@ jobs:
           Compress-Archive -Path dist/* -DestinationPath yt-dlp-gui-win64.zip
       
       - name: Upload Artifact
-      - uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4
         if: ${{ github.event.inputs.version == '' }}
         with:
           name: yt-dlp-gui-win64
           path: ./app/dist/
 
-      - name: Get version
-        working-directory: ./app
-        run: echo "VERSION=$(python -c "from version import __version__; print(__version__)")" | Out-File -FilePath $env:GITHUB_ENV -Append
-
       - name: Create Release
-      - uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v2
         if: ${{ github.event.inputs.version != '' }}
         with:
           tag_name: ${{ github.event.inputs.version }}
