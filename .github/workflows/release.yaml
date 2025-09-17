@@ -4,8 +4,6 @@ on:
   push:
     paths:
       - 'app/version.py'
-
-on:
   workflow_dispatch:
     inputs:
       version:
